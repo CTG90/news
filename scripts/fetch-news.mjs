@@ -140,7 +140,7 @@ async function quotes() {
       if (price != null && prev != null) out.set(t.sym, { ...t, price, change: price - prev, pct: ((price - prev) / prev) * 100 });
     } catch (e) { quoteErrors.push(`quote ${t.sym}: ${e.message}`); }
   }
-  return TICKERS.map((t) => out.get(t.sym)).filter(Boolean).map(({ cnbc, ...q }) => q);
+  return TICKERS.map((t) => out.get(t.sym)).filter(Boolean).map(({ cnbc, ...q }) => ({ ...q, url: `https://www.cnbc.com/quotes/${encodeURIComponent(cnbc)}` }));
 }
 
 async function main() {

@@ -47,7 +47,7 @@ header{padding:calc(var(--safe-t) + 14px) 0 4px;display:flex;align-items:flex-en
 /* Markets */
 .mkts{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:6px -16px 4px;padding:2px 16px}
 .mkts::-webkit-scrollbar{display:none}
-.q{flex:none;background:var(--bg2);border-radius:12px;padding:9px 12px;min-width:108px}
+.q{display:block;flex:none;background:var(--bg2);border-radius:12px;padding:9px 12px;min-width:108px}
 .q b{display:block;font-size:13px;color:var(--sub);font-weight:600}
 .q .p{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
 .q .c{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
@@ -222,7 +222,8 @@ function markets() {
   return `<div class="mkts">${data.markets.map((q) => {
     const d = q.change >= 0 ? 'up' : 'down', s = q.change >= 0 ? '+' : '';
     const p = q.price >= 1000 ? q.price.toLocaleString(undefined, { maximumFractionDigits: 0 }) : q.price.toFixed(2);
-    return `<div class="q"><b>${esc(q.label)}</b><div class="p">${p}${q.suffix || ''}</div><div class="c ${d}">${s}${q.pct.toFixed(2)}%</div></div>`;
+    const url = q.url || `https://finance.yahoo.com/quote/${encodeURIComponent(q.sym)}`;
+    return `<a class="q" href="${esc(url)}" target="_blank" rel="noopener"><b>${esc(q.label)}</b><div class="p">${p}${q.suffix || ''}</div><div class="c ${d}">${s}${q.pct.toFixed(2)}%</div></a>`;
   }).join('')}</div>`;
 }
 
