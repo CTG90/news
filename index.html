@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coke's News</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="News">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+:root{
+  --bg:#fff; --bg2:#f2f2f7; --card:#fff; --text:#000; --sub:#6c6c70; --line:rgba(60,60,67,.18);
+  --accent:#fa2d48; --up:#1a9d4b; --down:#e0352b; --chip:#e9e9ee; --blur:rgba(255,255,255,.82);
+  --safe-t:env(safe-area-inset-top); --safe-b:env(safe-area-inset-bottom);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#000; --bg2:#1c1c1e; --card:#1c1c1e; --text:#fff; --sub:#98989f; --line:rgba(84,84,88,.5);
+  --up:#30d158; --down:#ff453a; --chip:#2c2c2e; --blur:rgba(0,0,0,.78);
+}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px calc(84px + var(--safe-b))}
+
+/* Header */
+header{padding:calc(var(--safe-t) + 14px) 0 4px;display:flex;align-items:flex-end;justify-content:space-between}
+.brand{font:800 34px/1 -apple-system,"SF Pro Display",sans-serif;letter-spacing:-.02em}
+.brand span{color:var(--accent)}
+.date{color:var(--sub);font-weight:600;font-size:15px;margin-top:4px;text-transform:uppercase;letter-spacing:.02em}
+.refresh{width:36px;height:36px;border-radius:50%;background:var(--chip);display:grid;place-items:center}
+.refresh svg{width:18px;height:18px}
+.spin svg{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Chips */
+.chips{position:sticky;top:0;z-index:5;margin:8px -16px 0;padding:calc(var(--safe-t)*0 + 8px) 16px 10px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;background:var(--blur);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px)}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 14px;border-radius:18px;background:var(--chip);font-weight:600;font-size:15px;white-space:nowrap}
+.chip.on{background:var(--text);color:var(--bg)}
+
+/* Markets */
+.mkts{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:6px -16px 4px;padding:2px 16px}
+.mkts::-webkit-scrollbar{display:none}
+.q{flex:none;background:var(--bg2);border-radius:12px;padding:9px 12px;min-width:108px}
+.q b{display:block;font-size:13px;color:var(--sub);font-weight:600}
+.q .p{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
+.q .c{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.down{color:var(--down)}
+
+/* Breaking */
+.breaking{margin:12px 0 4px;background:var(--accent);color:#fff;border-radius:14px;padding:12px 14px;display:block}
+.breaking .lbl{font-size:12px;font-weight:800;letter-spacing:.08em;opacity:.9;display:flex;align-items:center;gap:6px}
+.breaking .lbl i{width:8px;height:8px;border-radius:50%;background:#fff;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.breaking .t{font-weight:700;font-size:17px;margin-top:4px}
+.breaking .m{font-size:13px;opacity:.85;margin-top:3px}
+
+/* Section heading */
+h2{font:800 26px/1.1 -apple-system,"SF Pro Display",sans-serif;letter-spacing:-.01em;margin:26px 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+h2 button{font-size:15px;font-weight:600;color:var(--accent)}
+h2 .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:middle}
+
+/* Cards */
+.hero{display:block;background:var(--card);border-radius:16px;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08),0 6px 20px rgba(0,0,0,.06)}
+.hero .img{aspect-ratio:16/9}
+.hero .body{padding:12px 14px 14px}
+.hero .t{font:700 22px/1.2 -apple-system,"SF Pro Display",sans-serif;letter-spacing:-.01em;margin:4px 0 6px}
+.hero .s{color:var(--sub);font-size:15px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.src{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);display:flex;gap:6px;align-items:center}
+.src .tag{background:var(--accent);color:#fff;border-radius:4px;padding:1px 5px;font-size:10px}
+.meta{display:flex;justify-content:space-between;align-items:center;color:var(--sub);font-size:13px;margin-top:8px}
+.save{width:30px;height:30px;display:grid;place-items:center;margin:-6px -6px -6px 0;color:var(--sub)}
+.save svg{width:18px;height:18px}
+.save.on{color:var(--accent)}
+.row{display:flex;gap:12px;padding:12px 0;border-top:.5px solid var(--line)}
+.row .txt{flex:1;min-width:0}
+.row .t{font-weight:700;font-size:17px;line-height:1.25;margin-top:3px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.row .img{width:92px;height:92px;border-radius:10px;flex:none}
+.img{background:var(--bg2) center/cover no-repeat;position:relative;overflow:hidden}
+.img.ph{display:grid;place-items:center;color:#fff;font:800 20px/1 -apple-system,sans-serif;letter-spacing:.02em}
+.hero .img.ph{font-size:34px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px}
+.mini{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.mini .img{aspect-ratio:4/3}
+.mini .body{padding:8px 10px 10px}
+.mini .t{font-weight:700;font-size:15px;line-height:1.25;margin-top:3px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mini .meta{margin-top:4px}
+@media (prefers-color-scheme:dark){.hero,.mini{box-shadow:none}}
+@media (min-width:640px){.row .img{width:120px;height:90px}}
+
+.more{display:block;width:100%;margin:8px 0 0;padding:12px;border-radius:12px;background:var(--bg2);font-weight:600;color:var(--accent)}
+.empty{color:var(--sub);text-align:center;padding:60px 20px}
+.upd{color:var(--sub);font-size:12px;text-align:center;margin:24px 0 0}
+.search{width:100%;margin:10px 0 4px;padding:11px 14px;border-radius:12px;border:0;background:var(--bg2);color:var(--text);font:inherit;font-size:17px;outline:none}
+
+/* Tab bar */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;justify-content:space-around;padding:6px 0 calc(var(--safe-b) + 6px);background:var(--blur);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--line)}
+nav button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:600;color:var(--sub);min-width:70px}
+nav button svg{width:26px;height:26px}
+nav button.on{color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 80px);transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:20px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><div class="brand" id="brand">News</div><div class="date" id="date"></div></div>
+    <button class="refresh" id="refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg></button>
+  </header>
+  <div class="chips" id="chips"></div>
+  <main id="main"><div class="empty">Loading…</div></main>
+</div>
+<nav>
+  <button data-tab="today" class="on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm2 3v4h6V7H6zm8 0v2h4V7h-4zm0 4v2h4v-2h-4zm-8 2v2h12v-2H6zm0 4v1h12v-1H6z"/></svg>Today</button>
+  <button data-tab="saved"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>Saved</button>
+  <button data-tab="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search</button>
+</nav>
+<div class="toast" id="toast"></div>
+<script>
+const COLORS = { national:'#0a84ff', sc:'#7a2b8f', politics:'#d63a3a', tech:'#5e5ce6', sneakers:'#ff9f0a', stocks:'#1a9d4b', economy:'#0f7d8c' };
+const $ = (s) => document.querySelector(s);
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+let data = null, tab = 'today', section = store.get('section', 'top'), query = '', expanded = {};
+let saved = store.get('saved', []);
+
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
+function ago(t) {
+  const m = Math.round((Date.now() - t) / 60000);
+  if (m < 1) return 'Just now'; if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60); if (h < 24) return `${h}h ago`;
+  return `${Math.round(h / 24)}d ago`;
+}
+function initials(s) { return s.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase(); }
+function img(a, cls = '') {
+  const c = COLORS[a.section] || '#888';
+  const ph = `background:linear-gradient(135deg,${c},${c}aa)`;
+  if (!a.image) return `<div class="img ph ${cls}" style="${ph}">${esc(initials(a.source))}</div>`;
+  return `<div class="img ${cls}" style="${ph}" data-i="${esc(initials(a.source))}"><img src="${esc(a.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="var p=this.parentNode;this.remove();p.classList.add('ph');p.textContent=p.dataset.i"></div>`;
+}
+const isSaved = (a) => saved.some((s) => s.link === a.link);
+const bm = (a) => `<button class="save ${isSaved(a) ? 'on' : ''}" data-save="${esc(a.link)}" aria-label="Save"><svg viewBox="0 0 24 24" fill="${isSaved(a) ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-6-4-6 4z"/></svg></button>`;
+const src = (a) => `<div class="src">${a.breaking ? '<span class="tag">BREAKING</span>' : ''}${esc(a.source)}</div>`;
+const link = (a, inner, cls) => `<a class="${cls}" href="${esc(a.link)}" target="_blank" rel="noopener">${inner}</a>`;
+
+const hero = (a) => link(a, `${img(a)}<div class="body">${src(a)}<div class="t">${esc(a.title)}</div>${a.summary ? `<div class="s">${esc(a.summary)}</div>` : ''}<div class="meta"><span>${ago(a.time)}</span>${bm(a)}</div></div>`, 'hero');
+const row = (a) => link(a, `<div class="txt">${src(a)}<div class="t">${esc(a.title)}</div><div class="meta"><span>${ago(a.time)}</span>${bm(a)}</div></div>${img(a)}`, 'row');
+const mini = (a) => link(a, `${img(a)}<div class="body">${src(a)}<div class="t">${esc(a.title)}</div><div class="meta"><span>${ago(a.time)}</span>${bm(a)}</div></div>`, 'mini');
+
+function markets() {
+  if (!data.markets?.length) return '';
+  return `<div class="mkts">${data.markets.map((q) => {
+    const d = q.change >= 0 ? 'up' : 'down', s = q.change >= 0 ? '+' : '';
+    const p = q.price >= 1000 ? q.price.toLocaleString(undefined, { maximumFractionDigits: 0 }) : q.price.toFixed(2);
+    return `<div class="q"><b>${esc(q.label)}</b><div class="p">${p}</div><div class="c ${d}">${s}${q.pct.toFixed(2)}%</div></div>`;
+  }).join('')}</div>`;
+}
+
+function allArticles() { return Object.values(data.articles).flat(); }
+
+function breakingBanner() {
+  const b = allArticles().filter((a) => a.breaking).sort((x, y) => y.time - x.time)[0];
+  if (!b) return '';
+  return `<a class="breaking" href="${esc(b.link)}" target="_blank" rel="noopener"><div class="lbl"><i></i>BREAKING · ${esc(data.sections[b.section] || '')}</div><div class="t">${esc(b.title)}</div><div class="m">${esc(b.source)} · ${ago(b.time)}</div></a>`;
+}
+
+// Top: a mix across sections, preferring stories with images and breaking news.
+function topStories() {
+  const out = [];
+  const lists = Object.entries(data.articles).map(([k, l]) => l.slice(0, 8));
+  const used = new Set();
+  const breaking = allArticles().filter((a) => a.breaking).sort((a, b) => b.time - a.time);
+  if (breaking[0]) used.add(breaking[0].link); // already in the red banner
+  breaking.slice(1, 3).forEach((a) => { out.push(a); used.add(a.link); });
+  for (let i = 0; out.length < 14 && i < 8; i++) for (const l of lists) {
+    const a = l[i]; if (a && !used.has(a.link)) { out.push(a); used.add(a.link); }
+  }
+  const lead = out.findIndex((a) => a.image);
+  if (lead > 0) out.unshift(out.splice(lead, 1)[0]);
+  return out.slice(0, 14);
+}
+
+function sectionBlock(id, n = 5) {
+  const l = data.articles[id] || [];
+  if (!l.length) return '';
+  const first = l.find((a) => a.image) || l[0];
+  const rest = l.filter((a) => a !== first);
+  const pair = rest.filter((a) => a.image).slice(0, 2);
+  const others = rest.filter((a) => !pair.includes(a)).slice(0, n - 1 - pair.length);
+  return `<h2><span><span class="dot" style="background:${COLORS[id]}"></span>${esc(data.sections[id])}</span><button data-go="${id}">See all</button></h2>
+    ${hero(first)}${pair.length === 2 ? `<div class="grid2">${pair.map(mini).join('')}</div>` : pair.map(row).join('')}${others.map(row).join('')}`;
+}
+
+function renderToday() {
+  if (section === 'top') {
+    const top = topStories();
+    return `${markets()}${breakingBanner()}<h2>Top Stories</h2>${top[0] ? hero(top[0]) : ''}${top.slice(1).map(row).join('')}
+      ${Object.keys(data.articles).map((id) => sectionBlock(id)).join('')}${footer()}`;
+  }
+  const l = data.articles[section] || [];
+  const n = expanded[section] || 25;
+  const first = l.find((a) => a.image) || l[0];
+  const rest = l.filter((a) => a !== first);
+  return `${section === 'stocks' || section === 'economy' ? markets() : ''}
+    <h2><span><span class="dot" style="background:${COLORS[section]}"></span>${esc(data.sections[section])}</span></h2>
+    ${first ? hero(first) : '<div class="empty">No stories right now.</div>'}${rest.slice(0, n).map(row).join('')}
+    ${rest.length > n ? `<button class="more" data-more="${section}">Show more</button>` : ''}${footer()}`;
+}
+function renderSaved() {
+  if (!saved.length) return `<h2>Saved</h2><div class="empty">Tap the bookmark on any story to save it here.</div>`;
+  return `<h2>Saved <button data-clear>Clear</button></h2>${saved.map(row).join('')}`;
+}
+function renderSearch() {
+  const q = query.trim().toLowerCase();
+  const res = q ? allArticles().filter((a) => (a.title + ' ' + a.summary + ' ' + a.source).toLowerCase().includes(q)).sort((a, b) => b.time - a.time) : [];
+  return `<input class="search" id="q" type="search" placeholder="Search stories" value="${esc(query)}" autocomplete="off">
+    <div id="results">${q ? (res.length ? res.slice(0, 60).map(row).join('') : '<div class="empty">No matches.</div>') : '<div class="empty">Search every section at once.</div>'}</div>`;
+}
+const footer = () => `<div class="upd">Updated ${ago(data.updated)} · tap ↻ to refresh</div>`;
+
+function renderChips() {
+  const ids = ['top', ...Object.keys(data?.sections || {})];
+  $('#chips').style.display = tab === 'today' ? '' : 'none';
+  $('#chips').innerHTML = ids.map((id) => `<button class="chip ${id === section ? 'on' : ''}" data-sec="${id}">${id === 'top' ? 'Top' : esc(data.sections[id])}</button>`).join('');
+}
+function render() {
+  $('#date').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  if (!data) return;
+  renderChips();
+  $('#main').innerHTML = tab === 'today' ? renderToday() : tab === 'saved' ? renderSaved() : renderSearch();
+  document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
+  if (tab === 'search') { const i = $('#q'); i.oninput = () => { query = i.value; const r = renderSearch(); const tmp = document.createElement('div'); tmp.innerHTML = r; $('#results').innerHTML = tmp.querySelector('#results').innerHTML; }; }
+}
+
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 1600); }
+
+async function load(manual) {
+  $('#refresh').classList.add('spin');
+  try {
+    const r = await fetch(`data/news.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status);
+    data = await r.json();
+    store.set('cache', data);
+    if (manual) toast(`Updated ${ago(data.updated)}`);
+  } catch (e) {
+    data = data || store.get('cache', null);
+    if (!data) $('#main').innerHTML = '<div class="empty">Couldn’t load news. Check your connection and tap ↻.</div>';
+    else if (manual) toast('Offline — showing last update');
+  }
+  $('#refresh').classList.remove('spin');
+  render();
+}
+
+document.addEventListener('click', (e) => {
+  const s = e.target.closest('[data-save]');
+  if (s) {
+    e.preventDefault(); e.stopPropagation();
+    const a = allArticles().find((x) => x.link === s.dataset.save) || saved.find((x) => x.link === s.dataset.save);
+    if (!a) return;
+    if (isSaved(a)) { saved = saved.filter((x) => x.link !== a.link); toast('Removed'); }
+    else { saved.unshift(a); toast('Saved'); }
+    store.set('saved', saved); render(); return;
+  }
+  const c = e.target.closest('[data-sec]');
+  if (c) { section = c.dataset.sec; store.set('section', section); render(); scrollTo({ top: 0 }); c.scrollIntoView({ inline: 'center', block: 'nearest' }); return; }
+  const g = e.target.closest('[data-go]');
+  if (g) { section = g.dataset.go; store.set('section', section); render(); scrollTo({ top: 0 }); return; }
+  const m = e.target.closest('[data-more]');
+  if (m) { expanded[m.dataset.more] = (expanded[m.dataset.more] || 25) + 25; render(); return; }
+  if (e.target.closest('[data-clear]')) { saved = []; store.set('saved', saved); render(); return; }
+  const t = e.target.closest('nav [data-tab]');
+  if (t) { if (tab === t.dataset.tab) scrollTo({ top: 0, behavior: 'smooth' }); tab = t.dataset.tab; render(); if (tab === 'search') $('#q')?.focus(); return; }
+});
+$('#refresh').onclick = () => load(true);
+// Refresh when you come back to the app after 10+ minutes.
+document.addEventListener('visibilitychange', () => { if (!document.hidden && data && Date.now() - (load.last || 0) > 600000) { load.last = Date.now(); load(); } });
+load.last = Date.now();
+data = store.get('cache', null); render();
+load();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
