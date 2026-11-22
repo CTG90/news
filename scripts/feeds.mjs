@@ -89,7 +89,6 @@ export const SECTIONS = {
   sports: {
     label: 'Sports',
     feeds: [
-      { name: 'ESPN', url: 'https://www.espn.com/espn/rss/news' },
       { name: 'CBS Sports', url: 'https://www.cbssports.com/rss/headlines/' },
       { name: 'Yahoo Sports', url: 'https://sports.yahoo.com/rss/' },
       { name: 'The Athletic', url: 'https://www.nytimes.com/athletic/rss/news/' },

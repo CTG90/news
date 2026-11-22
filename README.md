@@ -2,7 +2,7 @@
 
 Live at **https://ctg90.github.io/news/**
 
-A free, Apple News–style news app: National, South Carolina, Politics, Tech, Sneakers, Stocks, Economy, plus a breaking-news banner and a market strip.
+A free, Apple News–style news app with 13 sections: National, South Carolina, Politics, Tech, Sneakers, Stocks, Economy, Sports, Entertainment, Science, Health & Fitness, Rides (motorcycles and autos) and Photography. It also has a breaking-news banner, a market strip, and an Edit button to hide or reorder sections.
 
 ## How it works
 - A GitHub Action (`.github/workflows/update-news.yml`) runs every 30 minutes and executes `scripts/fetch-news.mjs`.
