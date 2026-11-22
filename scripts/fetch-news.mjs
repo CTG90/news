@@ -104,12 +104,16 @@ async function quotes() {
     const syms = TICKERS.flatMap((t) => arr(t.cnbc)).join('|');
     const j = JSON.parse(await get(`https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=${encodeURIComponent(syms)}&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json&events=1`));
     const got = arr(j?.FormattedQuoteResult?.FormattedQuote);
-    quoteErrors.push(`quote CNBC returned: ${got.map((q) => `${q.symbol}=${q.last ?? q.code ?? '?'}`).join(' ')}`);
     for (const q of got) {
       const t = TICKERS.find((x) => arr(x.cnbc).includes(q.symbol));
       if (!t || out.has(t.sym)) continue;
-      const price = num(q.last), change = num(q.change), pct = num(q.change_pct);
-      if (t && Number.isFinite(price) && Number.isFinite(pct)) out.set(t.sym, { ...t, price, change: Number.isFinite(change) ? change : 0, pct });
+      const price = num(q.last), change = num(q.change), prevClose = num(q.previous_day_closing);
+      let pct = num(q.change_pct);
+      if (!Number.isFinite(pct) && Number.isFinite(change) && price !== change) pct = (change / (price - change)) * 100;
+      if (!Number.isFinite(pct) && Number.isFinite(prevClose) && prevClose) pct = ((price - prevClose) / prevClose) * 100;
+      if (!Number.isFinite(pct) && /^unch/i.test(String(q.change ?? ''))) pct = 0;
+      if (Number.isFinite(price) && Number.isFinite(pct)) out.set(t.sym, { ...t, price, change: Number.isFinite(change) ? change : 0, pct });
+      else quoteErrors.push(`quote ${q.symbol} fields: ${JSON.stringify({ last: q.last, change: q.change, change_pct: q.change_pct, prev: q.previous_day_closing })}`);
     }
   } catch (e) { quoteErrors.push(`quote CNBC: ${e.message}`); }
   // Stooq backup (free CSV) for futures, then Yahoo for anything still missing.
