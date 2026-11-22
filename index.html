@@ -161,7 +161,7 @@ function markets() {
   return `<div class="mkts">${data.markets.map((q) => {
     const d = q.change >= 0 ? 'up' : 'down', s = q.change >= 0 ? '+' : '';
     const p = q.price >= 1000 ? q.price.toLocaleString(undefined, { maximumFractionDigits: 0 }) : q.price.toFixed(2);
-    return `<div class="q"><b>${esc(q.label)}</b><div class="p">${p}</div><div class="c ${d}">${s}${q.pct.toFixed(2)}%</div></div>`;
+    return `<div class="q"><b>${esc(q.label)}</b><div class="p">${p}${q.suffix || ''}</div><div class="c ${d}">${s}${q.pct.toFixed(2)}%</div></div>`;
   }).join('')}</div>`;
 }
 

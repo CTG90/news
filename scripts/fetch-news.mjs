@@ -10,7 +10,7 @@ const PER_SECTION = 60;
 const MAX_AGE_H = 72;
 const LOCAL = process.argv.includes('--local') ? process.argv[process.argv.indexOf('--local') + 1] : null;
 
-const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@', textNodeName: '#text', cdataPropName: false });
+const parser = new XMLParser({ processEntities: false, htmlEntities: false, ignoreAttributes: false, attributeNamePrefix: '@', textNodeName: '#text', cdataPropName: false });
 
 async function get(url, ms = 12000) {
   if (LOCAL) return readFile(`${LOCAL}/${createHash('sha1').update(url).digest('hex')}.xml`, 'utf8');
@@ -64,7 +64,7 @@ function parseFeed(xml, feed, section) {
     const date = new Date(txt(it.pubDate) || txt(it.published) || txt(it.updated) || txt(it['dc:date']) || Date.now());
     const summary = clean(txt(it.description) || txt(it.summary) || txt(it.content) || txt(it['content:encoded'])).slice(0, 280);
     return {
-      title, link: link.trim(), source, section,
+      title, link: decode(link.trim()), source, section,
       time: isNaN(date) ? Date.now() : date.getTime(),
       summary: feed.fallback ? '' : summary,
       image: pickImage(it),
@@ -96,22 +96,29 @@ async function pool(items, n, fn) {
 }
 
 const quoteErrors = [];
+const num = (v) => (v == null || v === '' ? NaN : parseFloat(String(v).replace(/[,%+]/g, '')));
 async function quotes() {
-  const out = [];
-  await pool(TICKERS, 3, async (t) => {
+  const out = new Map();
+  // CNBC quote service: one request for everything.
+  try {
+    const syms = TICKERS.map((t) => t.cnbc).join('|');
+    const j = JSON.parse(await get(`https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=${encodeURIComponent(syms)}&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json&events=1`));
+    for (const q of arr(j?.FormattedQuoteResult?.FormattedQuote)) {
+      const t = TICKERS.find((x) => x.cnbc === q.symbol);
+      const price = num(q.last), change = num(q.change), pct = num(q.change_pct);
+      if (t && Number.isFinite(price) && Number.isFinite(pct)) out.set(t.sym, { ...t, price, change: Number.isFinite(change) ? change : 0, pct });
+    }
+  } catch (e) { quoteErrors.push(`quote CNBC: ${e.message}`); }
+  // Yahoo backup for anything CNBC missed.
+  for (const t of TICKERS.filter((x) => !out.has(x.sym))) {
     try {
-      let j;
-      for (const host of ['query1', 'query2']) {
-        try { j = JSON.parse(await get(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(t.sym)}?range=1d&interval=1d`)); break; }
-        catch (e) { if (host === 'query2') throw e; }
-      }
+      const j = JSON.parse(await get(`https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(t.sym)}?range=1d&interval=1d`));
       const m = j.chart.result[0].meta;
       const price = m.regularMarketPrice, prev = m.chartPreviousClose ?? m.previousClose;
-      if (price == null || prev == null) return;
-      out.push({ ...t, price, change: price - prev, pct: ((price - prev) / prev) * 100 });
+      if (price != null && prev != null) out.set(t.sym, { ...t, price, change: price - prev, pct: ((price - prev) / prev) * 100 });
     } catch (e) { quoteErrors.push(`quote ${t.sym}: ${e.message}`); }
-  });
-  return TICKERS.map((t) => out.find((q) => q.sym === t.sym)).filter(Boolean);
+  }
+  return TICKERS.map((t) => out.get(t.sym)).filter(Boolean).map(({ cnbc, ...q }) => q);
 }
 
 async function main() {

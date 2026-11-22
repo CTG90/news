@@ -57,7 +57,8 @@ export const SECTIONS = {
       { name: 'Sneaker News', url: 'https://sneakernews.com/feed/' },
       { name: 'Nice Kicks', url: 'https://www.nicekicks.com/feed/' },
       { name: 'Hypebeast', url: 'https://hypebeast.com/footwear/feed' },
-      { name: 'KicksOnFire', url: 'https://www.kicksonfire.com/feed/' },
+      { name: 'Sneaker Files', url: 'https://www.sneakerfiles.com/feed/' },
+      { name: 'Highsnobiety', url: 'https://www.highsnobiety.com/feed/' },
       { name: 'Google News', url: gn('sneaker release when:3d'), fallback: true },
     ],
   },
@@ -66,7 +67,7 @@ export const SECTIONS = {
     feeds: [
       { name: 'CNBC', url: 'https://www.cnbc.com/id/10000664/device/rss/rss.html' },
       { name: 'MarketWatch', url: 'https://feeds.content.dowjones.io/public/rss/mw_marketpulse' },
-      { name: 'Yahoo Finance', url: 'https://finance.yahoo.com/news/rssindex' },
+      { name: 'Seeking Alpha', url: 'https://seekingalpha.com/market_currents.xml' },
       { name: 'Investing.com', url: 'https://www.investing.com/rss/news_25.rss' },
       { name: 'Google News', url: gn('stock market when:1d'), fallback: true },
     ],
@@ -83,19 +84,19 @@ export const SECTIONS = {
   },
 };
 
-// Market strip. Yahoo symbols. Add your watchlist here.
+// Market strip. cnbc = CNBC quote symbol (primary), sym = Yahoo symbol (backup). Add your watchlist here.
 export const TICKERS = [
-  { sym: '^GSPC', label: 'S&P 500' },
-  { sym: '^IXIC', label: 'Nasdaq' },
-  { sym: '^DJI', label: 'Dow' },
-  { sym: '^VIX', label: 'VIX' },
-  { sym: '^TNX', label: '10Y' },
-  { sym: 'BTC-USD', label: 'Bitcoin' },
-  { sym: 'CL=F', label: 'Oil' },
-  { sym: 'GC=F', label: 'Gold' },
-  { sym: 'AAPL', label: 'AAPL' },
-  { sym: 'NVDA', label: 'NVDA' },
-  { sym: 'TSLA', label: 'TSLA' },
+  { cnbc: '.SPX', sym: '^GSPC', label: 'S&P 500' },
+  { cnbc: '.IXIC', sym: '^IXIC', label: 'Nasdaq' },
+  { cnbc: '.DJI', sym: '^DJI', label: 'Dow' },
+  { cnbc: '.VIX', sym: '^VIX', label: 'VIX' },
+  { cnbc: 'US10Y', sym: '^TNX', label: '10Y', suffix: '%' },
+  { cnbc: 'BTC.CM=', sym: 'BTC-USD', label: 'Bitcoin' },
+  { cnbc: '@CL.1', sym: 'CL=F', label: 'Oil' },
+  { cnbc: '@GC.1', sym: 'GC=F', label: 'Gold' },
+  { cnbc: 'AAPL', sym: 'AAPL', label: 'AAPL' },
+  { cnbc: 'NVDA', sym: 'NVDA', label: 'NVDA' },
+  { cnbc: 'TSLA', sym: 'TSLA', label: 'TSLA' },
 ];
 
 // Headlines matching these, under 6 hours old, get a red BREAKING tag.
