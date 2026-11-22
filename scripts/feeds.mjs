@@ -24,8 +24,8 @@ export const SECTIONS = {
       { name: 'WCBD', url: 'https://www.counton2.com/feed/' },
       { name: 'Post and Courier', url: 'https://www.postandcourier.com/search/?f=rss&t=article&c=news&l=40&s=start_time&sd=desc' },
       { name: 'SCNow', url: 'https://scnow.com/search/?f=rss&t=article&c=news&l=40&s=start_time&sd=desc' },
-      { name: 'Google News', url: gn('"South Carolina" when:2d'), fallback: true },
-      { name: 'Google News', url: gn('Florence SC OR "Pee Dee" when:3d'), fallback: true },
+      { name: 'Google News', url: gn('"South Carolina" (police OR sheriff OR crash OR shooting OR governor OR legislature OR county OR SCDOT) -football -basketball -baseball -Gamecocks -Tigers when:2d'), fallback: true },
+      { name: 'Google News', url: gn('(Florence OR "Pee Dee" OR Dillon OR Darlington) "SC" -football -basketball when:3d'), fallback: true },
     ],
   },
   politics: {
@@ -37,7 +37,7 @@ export const SECTIONS = {
       { name: 'CBS News', url: 'https://www.cbsnews.com/latest/rss/politics' },
       { name: 'Fox News', url: 'https://moxie.foxnews.com/google-publisher/politics.xml' },
       { name: 'Washington Examiner', url: 'https://www.washingtonexaminer.com/feed/' },
-      { name: 'Google News', url: gn('politics when:1d'), fallback: true },
+      { name: 'Google News', url: gn('(Congress OR "White House" OR Senate OR Supreme Court) when:1d'), fallback: true },
     ],
   },
   tech: {

@@ -95,16 +95,21 @@ async function pool(items, n, fn) {
   await Promise.all(Array.from({ length: n }, async () => { while (i < items.length) { const k = i++; await fn(items[k]); } }));
 }
 
+const quoteErrors = [];
 async function quotes() {
   const out = [];
-  await pool(TICKERS, 4, async (t) => {
+  await pool(TICKERS, 3, async (t) => {
     try {
-      const j = JSON.parse(await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(t.sym)}?range=1d&interval=1d`));
+      let j;
+      for (const host of ['query1', 'query2']) {
+        try { j = JSON.parse(await get(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(t.sym)}?range=1d&interval=1d`)); break; }
+        catch (e) { if (host === 'query2') throw e; }
+      }
       const m = j.chart.result[0].meta;
       const price = m.regularMarketPrice, prev = m.chartPreviousClose ?? m.previousClose;
       if (price == null || prev == null) return;
       out.push({ ...t, price, change: price - prev, pct: ((price - prev) / prev) * 100 });
-    } catch (e) { console.warn(`quote ${t.sym}: ${e.message}`); }
+    } catch (e) { quoteErrors.push(`quote ${t.sym}: ${e.message}`); }
   });
   return TICKERS.map((t) => out.find((q) => q.sym === t.sym)).filter(Boolean);
 }
@@ -122,14 +127,19 @@ async function main() {
       } catch (e) { report.push(`${id.padEnd(9)}   ✗  ${f.name}: ${e.message}`); }
     });
     const cutoff = Date.now() - MAX_AGE_H * 3600e3;
-    // Direct feeds beat Google News duplicates.
+    // Direct feeds beat Google News duplicates. Google News only tops up thin sections.
     all.sort((a, b) => (a.fallback - b.fallback) || (b.time - a.time));
+    const directCount = all.filter((a) => !a.fallback && a.time >= Date.now() - MAX_AGE_H * 3600e3).length;
+    const fallbackRoom = Math.max(0, 30 - directCount);
+    let fallbackUsed = 0;
     const seen = new Set();
     const list = [];
     for (const a of all) {
       if (a.time < cutoff || a.time > Date.now() + 3600e3) continue;
       const k = key(a.title);
       if (!k || seen.has(k)) continue;
+      if (a.fallback && fallbackUsed >= fallbackRoom) continue;
+      if (a.fallback) fallbackUsed++;
       seen.add(k);
       list.push(a);
     }
@@ -153,7 +163,9 @@ async function main() {
   };
   await mkdir('data', { recursive: true });
   await writeFile('data/news.json', JSON.stringify(data));
-  console.log(report.sort().join('\n'));
+  const rep = [...report.sort(), ...quoteErrors].join('\n');
+  await writeFile('data/report.txt', `${new Date().toISOString()}\n${rep}\n`);
+  console.log(rep);
   console.log(`\nwrote data/news.json — ${Object.values(sections).reduce((n, l) => n + l.length, 0)} stories, ${data.markets.length} quotes`);
 }
 
