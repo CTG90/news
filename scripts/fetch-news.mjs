@@ -101,14 +101,27 @@ async function quotes() {
   const out = new Map();
   // CNBC quote service: one request for everything.
   try {
-    const syms = TICKERS.map((t) => t.cnbc).join('|');
+    const syms = TICKERS.flatMap((t) => arr(t.cnbc)).join('|');
     const j = JSON.parse(await get(`https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=${encodeURIComponent(syms)}&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json&events=1`));
-    for (const q of arr(j?.FormattedQuoteResult?.FormattedQuote)) {
-      const t = TICKERS.find((x) => x.cnbc === q.symbol);
+    const got = arr(j?.FormattedQuoteResult?.FormattedQuote);
+    quoteErrors.push(`quote CNBC returned: ${got.map((q) => `${q.symbol}=${q.last ?? q.code ?? '?'}`).join(' ')}`);
+    for (const q of got) {
+      const t = TICKERS.find((x) => arr(x.cnbc).includes(q.symbol));
+      if (!t || out.has(t.sym)) continue;
       const price = num(q.last), change = num(q.change), pct = num(q.change_pct);
       if (t && Number.isFinite(price) && Number.isFinite(pct)) out.set(t.sym, { ...t, price, change: Number.isFinite(change) ? change : 0, pct });
     }
   } catch (e) { quoteErrors.push(`quote CNBC: ${e.message}`); }
+  // Stooq backup (free CSV) for futures, then Yahoo for anything still missing.
+  const STOOQ = { 'CL=F': 'cl.f', 'GC=F': 'gc.f' };
+  for (const t of TICKERS.filter((x) => !out.has(x.sym) && STOOQ[x.sym])) {
+    try {
+      const csv = (await get(`https://stooq.com/q/d/l/?s=${STOOQ[t.sym]}&i=d`)).trim().split('\n');
+      const last = csv.at(-1).split(','), prev = csv.at(-2).split(',');
+      const price = num(last[4]), pc = num(prev[4]);
+      if (Number.isFinite(price) && Number.isFinite(pc)) out.set(t.sym, { ...t, price, change: price - pc, pct: ((price - pc) / pc) * 100 });
+    } catch (e) { quoteErrors.push(`quote stooq ${t.sym}: ${e.message}`); }
+  }
   // Yahoo backup for anything CNBC missed.
   for (const t of TICKERS.filter((x) => !out.has(x.sym))) {
     try {

@@ -22,6 +22,11 @@ export const SECTIONS = {
       { name: 'WBTW', url: 'https://www.wbtw.com/feed/' },
       { name: 'WSPA', url: 'https://www.wspa.com/feed/' },
       { name: 'WCBD', url: 'https://www.counton2.com/feed/' },
+      { name: 'WIS', url: 'https://www.wistv.com/arc/outboundfeeds/rss/?outputType=xml' },
+      { name: 'WMBF', url: 'https://www.wmbfnews.com/arc/outboundfeeds/rss/?outputType=xml' },
+      { name: 'Live 5', url: 'https://www.live5news.com/arc/outboundfeeds/rss/?outputType=xml' },
+      { name: 'WLTX', url: 'https://www.wltx.com/feeds/syndication/rss/news' },
+      { name: 'WPDE', url: 'https://wpde.com/news/local.rss' },
       { name: 'Post and Courier', url: 'https://www.postandcourier.com/search/?f=rss&t=article&c=news&l=40&s=start_time&sd=desc' },
       { name: 'SCNow', url: 'https://scnow.com/search/?f=rss&t=article&c=news&l=40&s=start_time&sd=desc' },
       { name: 'Google News', url: gn('"South Carolina" (police OR sheriff OR crash OR shooting OR governor OR legislature OR county OR SCDOT) -football -basketball -baseball -Gamecocks -Tigers when:2d'), fallback: true },
@@ -82,6 +87,68 @@ export const SECTIONS = {
       { name: 'Google News', url: gnTopic('BUSINESS'), fallback: true },
     ],
   },
+  sports: {
+    label: 'Sports',
+    feeds: [
+      { name: 'ESPN', url: 'https://www.espn.com/espn/rss/news' },
+      { name: 'CBS Sports', url: 'https://www.cbssports.com/rss/headlines/' },
+      { name: 'Yahoo Sports', url: 'https://sports.yahoo.com/rss/' },
+      { name: 'SB Nation', url: 'https://www.sbnation.com/rss/current/index.xml' },
+      { name: 'Google News', url: gnTopic('SPORTS'), fallback: true },
+    ],
+  },
+  entertainment: {
+    label: 'Entertainment',
+    feeds: [
+      { name: 'Variety', url: 'https://variety.com/feed/' },
+      { name: 'Deadline', url: 'https://deadline.com/feed/' },
+      { name: 'Hollywood Reporter', url: 'https://www.hollywoodreporter.com/feed/' },
+      { name: 'IGN', url: 'https://feeds.feedburner.com/ign/all' },
+      { name: 'Google News', url: gnTopic('ENTERTAINMENT'), fallback: true },
+    ],
+  },
+  science: {
+    label: 'Science',
+    feeds: [
+      { name: 'ScienceDaily', url: 'https://www.sciencedaily.com/rss/top/science.xml' },
+      { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/science' },
+      { name: 'Space.com', url: 'https://www.space.com/feeds/all' },
+      { name: 'NASA', url: 'https://www.nasa.gov/news-release/feed/' },
+      { name: 'Google News', url: gnTopic('SCIENCE'), fallback: true },
+    ],
+  },
+  health: {
+    label: 'Health & Fitness',
+    feeds: [
+      { name: 'NPR', url: 'https://feeds.npr.org/1128/rss.xml' },
+      { name: 'ScienceDaily', url: 'https://www.sciencedaily.com/rss/top/health.xml' },
+      { name: 'BarBend', url: 'https://barbend.com/feed/' },
+      { name: 'Stronger by Science', url: 'https://www.strongerbyscience.com/feed/' },
+      { name: 'Google News', url: gnTopic('HEALTH'), fallback: true },
+    ],
+  },
+  rides: {
+    label: 'Rides',
+    feeds: [
+      { name: 'RideApart', url: 'https://www.rideapart.com/rss/articles/all/' },
+      { name: 'Cycle World', url: 'https://www.cycleworld.com/rss/' },
+      { name: 'Motor1', url: 'https://www.motor1.com/rss/articles/all/' },
+      { name: 'The Drive', url: 'https://www.thedrive.com/feed' },
+      { name: 'Car and Driver', url: 'https://www.caranddriver.com/rss/all.xml/' },
+      { name: 'Google News', url: gn('(motorcycle OR Harley-Davidson OR Indian Motorcycle) when:3d'), fallback: true },
+    ],
+  },
+  photography: {
+    label: 'Photography',
+    feeds: [
+      { name: 'PetaPixel', url: 'https://petapixel.com/feed/' },
+      { name: 'Fuji Rumors', url: 'https://www.fujirumors.com/feed/' },
+      { name: 'DPReview', url: 'https://www.dpreview.com/feeds/news.xml' },
+      { name: 'Digital Camera World', url: 'https://www.digitalcameraworld.com/feeds/all' },
+      { name: 'Google News', url: gn('(Fujifilm OR camera OR photography) when:3d'), fallback: true },
+    ],
+  },
+
 };
 
 // Market strip. cnbc = CNBC quote symbol (primary), sym = Yahoo symbol (backup). Add your watchlist here.
@@ -92,8 +159,8 @@ export const TICKERS = [
   { cnbc: '.VIX', sym: '^VIX', label: 'VIX' },
   { cnbc: 'US10Y', sym: '^TNX', label: '10Y', suffix: '%' },
   { cnbc: 'BTC.CM=', sym: 'BTC-USD', label: 'Bitcoin' },
-  { cnbc: '@CL.1', sym: 'CL=F', label: 'Oil' },
-  { cnbc: '@GC.1', sym: 'GC=F', label: 'Gold' },
+  { cnbc: ['@CL.1', 'CL.1', '@CL'], sym: 'CL=F', label: 'Oil' },
+  { cnbc: ['@GC.1', 'GC.1', '@GC'], sym: 'GC=F', label: 'Gold' },
   { cnbc: 'AAPL', sym: 'AAPL', label: 'AAPL' },
   { cnbc: 'NVDA', sym: 'NVDA', label: 'NVDA' },
   { cnbc: 'TSLA', sym: 'TSLA', label: 'TSLA' },
