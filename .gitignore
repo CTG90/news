@@ -1,1 +1,4 @@
 node_modules/
+data/
+push-state.json
+_site/

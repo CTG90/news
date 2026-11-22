@@ -106,6 +106,28 @@ nav button svg{width:26px;height:26px}
 nav button.on{color:var(--accent)}
 .toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 80px);transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:20px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
 .toast.show{opacity:1}
+.hint{background:var(--bg2);border-radius:12px;padding:12px 14px;color:var(--sub);font-size:15px;margin-bottom:12px}
+.games{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:8px -16px 4px;padding:2px 16px}
+.games::-webkit-scrollbar{display:none}
+.game{flex:none;width:138px;background:var(--bg2);border-radius:12px;padding:8px 10px;font-size:14px}
+.game.fav{box-shadow:inset 0 0 0 2px var(--accent)}
+.gl{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;display:flex;gap:6px;align-items:center}
+.live{font-style:normal;background:var(--accent);color:#fff;border-radius:4px;padding:0 4px;font-size:10px}
+.tm{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--sub);line-height:1.6}
+.tm img{width:18px;height:18px;object-fit:contain}
+.tm span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm small{font-size:10px;color:var(--sub)}
+.tm b{font-variant-numeric:tabular-nums;color:var(--text)}
+.game.pre .tm,.game.in .tm,.tm.w{color:var(--text)}
+.gd{font-size:12px;color:var(--sub);margin-top:3px}
+#sheet h3{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--sub);margin:22px 0 2px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.pill{display:flex;align-items:center;gap:6px;background:var(--bg2);border-radius:16px;padding:6px 12px;font-size:15px;font-weight:600}
+.pill input{accent-color:var(--accent)}
+.btns{display:flex;gap:10px;margin:8px 0}
+.btn{background:var(--accent);color:#fff;border-radius:10px;padding:10px 14px;font-weight:700;font-size:15px}
+.btn.ghost{background:var(--bg2);color:var(--accent)}
+.code{width:100%;height:64px;margin-top:8px;border:0;border-radius:10px;background:var(--bg2);color:var(--text);font:12px/1.3 ui-monospace,Menlo,monospace;padding:8px;resize:none}
 .chip.edit{background:none;color:var(--accent);padding-left:6px}
 #sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center}
 #sheet.open{display:flex}
@@ -136,7 +158,16 @@ nav button.on{color:var(--accent)}
   <button data-tab="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search</button>
 </nav>
 <div class="toast" id="toast"></div>
-<div id="sheet"><div class="panel"><div class="head"><b>Your sections</b><button data-done>Done</button></div><div class="sub">Uncheck to hide. Use the arrows to reorder.</div><div class="list"></div></div></div>
+<div id="sheet"><div class="panel">
+  <div class="head"><b>Settings</b><button data-done>Done</button></div>
+  <h3>Scores</h3><div class="sub">Leagues to show, plus your teams (they always show first, e.g. <i>Gamecocks, Clemson, Panthers</i>).</div>
+  <div id="leagues" class="pills"></div><input id="teams" class="search" type="text" placeholder="Your teams, separated by commas" autocomplete="off">
+  <h3>Breaking alerts</h3><div id="alerts"></div>
+  <h3>Sections</h3><div class="sub">Uncheck to hide. Use the arrows to reorder.</div><div class="list"></div>
+  <h3>Move to another device</h3><div class="sub">Copies your saved stories, sections, teams and For You history.</div>
+  <div class="btns"><button class="btn" data-sync-copy>Copy sync code</button></div>
+  <textarea id="synccode" class="code" placeholder="Paste a sync code from your other device"></textarea><div class="btns"><button class="btn ghost" data-sync-load>Load code</button></div>
+</div></div>
 <script>
 const COLORS = { national:'#0a84ff', sc:'#7a2b8f', politics:'#d63a3a', tech:'#5e5ce6', sneakers:'#ff9f0a', stocks:'#1a9d4b', economy:'#0f7d8c', sports:'#e8590c', entertainment:'#d6336c', science:'#1098ad', health:'#2f9e44', rides:'#495057', photography:'#ae3ec9' };
 const $ = (s) => document.querySelector(s);
@@ -146,7 +177,16 @@ const store = {
 };
 let data = null, tab = 'today', section = store.get('section', 'top'), query = '', expanded = {};
 let saved = store.get('saved', []);
-let prefs = store.get('prefs', { order: [], hidden: [] });
+let prefs = Object.assign({ order: [], hidden: [], leagues: ['nfl', 'cfb', 'nba'], teams: '' }, store.get('prefs', {}));
+let taste = Object.assign({ sec: {}, src: {}, kw: {}, n: 0, seen: [] }, store.get('taste', {}));
+let games = [];
+const VAPID = 'BB4mO8LsX8OLTRYJgJPGEdFQH9Ofgne7AM9h8L0w-vEa-88MSRwvaxVhTUcUguN73bMSZDoJxDhLvhtSehGglMg';
+const LEAGUES = {
+  nfl: { name: 'NFL', path: 'football/nfl' }, cfb: { name: 'College Football', short: 'NCAAF', path: 'football/college-football', college: true },
+  nba: { name: 'NBA', path: 'basketball/nba' }, cbb: { name: 'College Basketball', short: 'NCAAB', path: 'basketball/mens-college-basketball', college: true },
+  mlb: { name: 'MLB', path: 'baseball/mlb' }, nhl: { name: 'NHL', path: 'hockey/nhl' },
+};
+const STOP = new Set('about after again against also among another because been before being between could does doing during each from have having into just more most much must only other over said says should since some such than that their them then there these they this those through under until very what when where which while will with would your year years after first last people state says report says week today amid back near'.split(' '));
 // Sections in your chosen order, minus hidden ones. New sections show up at the end.
 function sectionIds(all = false) {
   const ids = Object.keys(data?.sections || {});
@@ -186,12 +226,82 @@ function markets() {
   }).join('')}</div>`;
 }
 
+// Live scores from ESPN's public scoreboard, loaded straight from your phone.
+const favList = () => prefs.teams.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
+async function loadScores() {
+  const fav = favList();
+  const isFav = (t) => fav.some((f) => [t.team.abbreviation, t.team.displayName, t.team.shortDisplayName, t.team.name, t.team.location].some((n) => n && (n.toLowerCase() === f || (f.length > 3 && n.toLowerCase().includes(f)))));
+  const res = await Promise.all(prefs.leagues.filter((l) => LEAGUES[l]).map(async (l) => {
+    try {
+      const j = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${LEAGUES[l].path}/scoreboard`).then((r) => r.json());
+      return (j.events || []).map((e) => {
+        const c = e.competitions[0], side = (h) => c.competitors.find((x) => x.homeAway === h);
+        const team = (t) => ({ abbr: t.team.abbreviation, logo: t.team.logo, score: t.score, rank: t.curatedRank?.current, fav: isFav(t) });
+        const home = team(side('home')), away = team(side('away'));
+        return { league: LEAGUES[l].short || LEAGUES[l].name, college: LEAGUES[l].college, link: e.links?.[0]?.href, state: e.status.type.state, detail: e.status.type.shortDetail, date: Date.parse(e.date), home, away, fav: home.fav || away.fav };
+      });
+    } catch { return []; }
+  }));
+  const rank = (t) => t.rank && t.rank <= 25;
+  games = res.flat().filter((g) => g.fav || !g.college || rank(g.home) || rank(g.away))
+    .filter((g) => g.state !== 'pre' || g.date - Date.now() < 36 * 3600e3)
+    .sort((a, b) => (b.fav - a.fav) || ({ in: 0, pre: 1, post: 2 }[a.state] - { in: 0, pre: 1, post: 2 }[b.state]) || (a.date - b.date));
+  const el = document.getElementById('scores');
+  if (el) el.outerHTML = scoresStrip(el.dataset.mode);
+}
+function scoresStrip(mode = 'all') {
+  let g = games;
+  if (mode === 'top') g = g.filter((x) => x.fav || x.state === 'in').slice(0, 10);
+  if (!g.length) return `<div id="scores" data-mode="${mode}"></div>`;
+  const tm = (t, win) => `<div class="tm ${win ? 'w' : ''}">${t.logo ? `<img src="${esc(t.logo)}" alt="" loading="lazy">` : ''}<span>${t.rank && t.rank <= 25 ? `<small>${t.rank}</small> ` : ''}${esc(t.abbr)}</span><b>${esc(t.score ?? '')}</b></div>`;
+  const card = (x) => {
+    const hw = x.state === 'post' && +x.home.score > +x.away.score, aw = x.state === 'post' && +x.away.score > +x.home.score;
+    const when = x.state === 'pre' ? new Date(x.date).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : x.detail;
+    return `<a class="game ${x.fav ? 'fav' : ''} ${x.state}" href="${esc(x.link || '#')}" target="_blank" rel="noopener"><div class="gl">${esc(x.league)}${x.state === 'in' ? ' <i class="live">LIVE</i>' : ''}</div>${tm(x.away, aw)}${tm(x.home, hw)}<div class="gd">${esc(when)}</div></a>`;
+  };
+  return `<div id="scores" data-mode="${mode}" class="games">${g.slice(0, 30).map(card).join('')}</div>`;
+}
+
 function allArticles() { return sectionIds().flatMap((id) => data.articles[id] || []); }
 
 function breakingBanner() {
   const b = allArticles().filter((a) => a.breaking).sort((x, y) => y.time - x.time)[0];
   if (!b) return '';
   return `<a class="breaking" href="${esc(b.link)}" target="_blank" rel="noopener"><div class="lbl"><i></i>BREAKING · ${esc(data.sections[b.section] || '')}</div><div class="t">${esc(b.title)}</div><div class="m">${esc(b.source)} · ${ago(b.time)}</div></a>`;
+}
+
+// For You: learns from what you open and save (kept on this device).
+const words = (t) => t.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 3 && !STOP.has(w));
+function learn(a, w) {
+  if (!a) return;
+  const bump = (m, k, v) => { m[k] = (m[k] || 0) * 0.995 + v; };
+  bump(taste.sec, a.section, w); bump(taste.src, a.source, w);
+  for (const k of new Set(words(a.title))) bump(taste.kw, k, w * 0.5);
+  const kws = Object.entries(taste.kw).sort((x, y) => y[1] - x[1]).slice(0, 400);
+  taste.kw = Object.fromEntries(kws);
+  taste.n++;
+  if (w <= 1) taste.seen = [a.link, ...taste.seen.filter((l) => l !== a.link)].slice(0, 300);
+  store.set('taste', taste);
+}
+function forYou() {
+  // Greedy pick with a small penalty for repeating a section, so one interest doesn't take over.
+  const pool = scored(), out = [], per = {};
+  while (pool.length && out.length < 120) {
+    let bi = 0, bs = -1e9;
+    for (let i = 0; i < pool.length; i++) { const v = pool[i].score - 1.1 * (per[pool[i].a.section] || 0); if (v > bs) { bs = v; bi = i; } }
+    const [x] = pool.splice(bi, 1); out.push(x.a); per[x.a.section] = (per[x.a.section] || 0) + 1;
+  }
+  return out;
+}
+function scored() {
+  const max = (m) => Math.max(1, ...Object.values(m));
+  const ms = max(taste.sec), mr = max(taste.src), mk = max(taste.kw);
+  const seen = new Set(taste.seen);
+  return allArticles().filter((a) => !seen.has(a.link)).map((a) => {
+    const h = (Date.now() - a.time) / 3600e3;
+    const kw = Math.min(3, words(a.title).reduce((n, w) => n + (taste.kw[w] || 0) / mk, 0));
+    return { a, score: 3 * (taste.sec[a.section] || 0) / ms + 1.5 * (taste.src[a.source] || 0) / mr + kw + 2 * Math.exp(-h / 18) + (a.image ? 0.3 : 0) };
+  }).sort((x, y) => y.score - x.score);
 }
 
 // Top: a mix across sections, preferring stories with images and breaking news.
@@ -224,14 +334,19 @@ function sectionBlock(id, n = 5) {
 function renderToday() {
   if (section === 'top') {
     const top = topStories();
-    return `${markets()}${breakingBanner()}<h2>Top Stories</h2>${top[0] ? hero(top[0]) : ''}${top.slice(1).map(row).join('')}
+    return `${markets()}${scoresStrip('top')}${breakingBanner()}<h2>Top Stories</h2>${top[0] ? hero(top[0]) : ''}${top.slice(1).map(row).join('')}
       ${sectionIds().map((id) => sectionBlock(id)).join('')}${footer()}`;
+  }
+  if (section === 'foryou') {
+    const l = forYou(), n = expanded.foryou || 25;
+    const hint = taste.n < 8 ? `<div class="hint">This feed learns from the stories you open and save. ${taste.n ? `${taste.n} so far, keep reading.` : 'Start tapping stories you like.'}</div>` : '';
+    return `<h2>For You</h2>${hint}${l[0] ? hero(l[0]) : ''}${l.slice(1, n).map(row).join('')}${l.length > n ? `<button class="more" data-more="foryou">Show more</button>` : ''}${footer()}`;
   }
   const l = data.articles[section] || [];
   const n = expanded[section] || 25;
   const first = l.find((a) => a.image) || l[0];
   const rest = l.filter((a) => a !== first);
-  return `${section === 'stocks' || section === 'economy' ? markets() : ''}
+  return `${section === 'stocks' || section === 'economy' ? markets() : ''}${section === 'sports' ? scoresStrip('all') : ''}
     <h2><span><span class="dot" style="background:${COLORS[section]}"></span>${esc(data.sections[section])}</span></h2>
     ${first ? hero(first) : '<div class="empty">No stories right now.</div>'}${rest.slice(0, n).map(row).join('')}
     ${rest.length > n ? `<button class="more" data-more="${section}">Show more</button>` : ''}${footer()}`;
@@ -249,12 +364,43 @@ function renderSearch() {
 const footer = () => `<div class="upd">Updated ${ago(data.updated)} · tap ↻ to refresh</div>`;
 
 function renderChips() {
-  const ids = ['top', ...sectionIds()];
-  if (section !== 'top' && !ids.includes(section)) section = 'top';
+  const ids = ['top', 'foryou', ...sectionIds()];
+  if (!ids.includes(section)) section = 'top';
   $('#chips').style.display = tab === 'today' ? '' : 'none';
-  $('#chips').innerHTML = ids.map((id) => `<button class="chip ${id === section ? 'on' : ''}" data-sec="${id}">${id === 'top' ? 'Top' : esc(data.sections[id])}</button>`).join('') + `<button class="chip edit" data-edit aria-label="Edit sections">Edit</button>`;
+  $('#chips').innerHTML = ids.map((id) => `<button class="chip ${id === section ? 'on' : ''}" data-sec="${id}">${id === 'top' ? 'Top' : id === 'foryou' ? 'For You' : esc(data.sections[id])}</button>`).join('') + `<button class="chip edit" data-edit aria-label="Settings">Edit</button>`;
 }
+const standalone = () => navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+const enc = (o) => btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+const dec = (c) => JSON.parse(decodeURIComponent(escape(atob(c.trim()))));
+async function copy(text, label) {
+  try { await navigator.clipboard.writeText(text); toast(`${label} copied`); }
+  catch { toast('Press and hold the code to copy it'); }
+}
+async function alertStatus() {
+  const el = $('#alerts');
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    el.innerHTML = isIOS && !standalone()
+      ? '<div class="sub">Add this app to your Home Screen (Share → Add to Home Screen), open it from there, then come back here to turn on alerts.</div>'
+      : '<div class="sub">This browser doesn’t support alerts.</div>';
+    return;
+  }
+  const reg = await navigator.serviceWorker.getRegistration();
+  if (!reg) { el.innerHTML = '<div class="sub">Alerts work once the app is opened from its live address (ctg90.github.io/news).</div>'; return; }
+  const sub = await reg.pushManager.getSubscription();
+  if (sub) {
+    const code = btoa(JSON.stringify(sub));
+    el.innerHTML = `<div class="sub">Alerts are on for this device. To finish setup (one time), copy this code and paste it into the <b>PUSH_SUBS</b> secret in your GitHub repo (Settings → Secrets and variables → Actions). Ask Claude to open the page for you.</div>
+      <textarea readonly class="code">${esc(code)}</textarea><div class="btns"><button class="btn" data-copy="${esc(code)}">Copy alert code</button><button class="btn ghost" data-alerts-off>Turn off</button></div>`;
+  } else {
+    el.innerHTML = `<div class="sub">Get a notification when breaking news hits National or South Carolina.</div><div class="btns"><button class="btn" data-alerts-on>Turn on alerts</button></div>`;
+  }
+}
+function urlKey(b64) { const p = '='.repeat((4 - b64.length % 4) % 4), raw = atob((b64 + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(raw, (c) => c.charCodeAt(0)); }
 function renderSheet() {
+  $('#leagues').innerHTML = Object.entries(LEAGUES).map(([id, l]) => `<label class="pill"><input type="checkbox" data-league="${id}" ${prefs.leagues.includes(id) ? 'checked' : ''}>${l.name}</label>`).join('');
+  $('#teams').value = prefs.teams;
+  alertStatus();
   const ids = sectionIds(true);
   $('#sheet .list').innerHTML = ids.map((id, i) => `<div class="srow">
     <label><input type="checkbox" data-toggle="${id}" ${prefs.hidden.includes(id) ? '' : 'checked'}><span class="dot" style="background:${COLORS[id] || '#888'}"></span>${esc(data.sections[id])}</label>
@@ -295,7 +441,7 @@ document.addEventListener('click', (e) => {
     const a = allArticles().find((x) => x.link === s.dataset.save) || saved.find((x) => x.link === s.dataset.save);
     if (!a) return;
     if (isSaved(a)) { saved = saved.filter((x) => x.link !== a.link); toast('Removed'); }
-    else { saved.unshift(a); toast('Saved'); }
+    else { saved.unshift(a); learn(a, 3); toast('Saved'); }
     store.set('saved', saved); render(); return;
   }
   const c = e.target.closest('[data-sec]');
@@ -304,6 +450,34 @@ document.addEventListener('click', (e) => {
   if (g) { section = g.dataset.go; store.set('section', section); render(); scrollTo({ top: 0 }); return; }
   const m = e.target.closest('[data-more]');
   if (m) { expanded[m.dataset.more] = (expanded[m.dataset.more] || 25) + 25; render(); return; }
+  const cp = e.target.closest('[data-copy]');
+  if (cp) { copy(cp.dataset.copy, 'Alert code'); return; }
+  if (e.target.closest('[data-sync-copy]')) { copy(enc({ prefs, saved, taste }), 'Sync code'); return; }
+  if (e.target.closest('[data-sync-load]')) {
+    try { const o = dec($('#synccode').value); prefs = Object.assign(prefs, o.prefs || {}); saved = o.saved || saved; taste = Object.assign(taste, o.taste || {});
+      store.set('prefs', prefs); store.set('saved', saved); store.set('taste', taste); $('#synccode').value = ''; renderSheet(); loadScores(); toast('Settings loaded'); }
+    catch { toast('That code didn’t work'); }
+    return;
+  }
+  if (e.target.closest('[data-alerts-on]')) {
+    (async () => {
+      try {
+        if (await Notification.requestPermission() !== 'granted') { toast('Notifications are blocked in Settings'); return; }
+        const reg = await navigator.serviceWorker.ready;
+        await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlKey(VAPID) });
+        toast('Alerts on'); alertStatus();
+      } catch (err) { toast('Couldn’t turn on alerts'); }
+    })();
+    return;
+  }
+  if (e.target.closest('[data-alerts-off]')) {
+    navigator.serviceWorker.ready.then((r) => r.pushManager.getSubscription()).then((s) => s && s.unsubscribe()).then(() => { toast('Alerts off'); alertStatus(); });
+    return;
+  }
+  const lg = e.target.closest('[data-league]');
+  if (lg) { prefs.leagues = Object.keys(LEAGUES).filter((id) => document.querySelector(`[data-league="${id}"]`).checked); store.set('prefs', prefs); loadScores(); return; }
+  const art = e.target.closest('a[href]');
+  if (art && !e.target.closest('[data-save]') && !art.classList.contains('game')) learn(allArticles().find((x) => x.link === art.getAttribute('href')) || saved.find((x) => x.link === art.getAttribute('href')), 1);
   if (e.target.closest('[data-edit]')) { renderSheet(); $('#sheet').classList.add('open'); return; }
   if (e.target.closest('[data-done]') || e.target.id === 'sheet') { $('#sheet').classList.remove('open'); render(); return; }
   const mv = e.target.closest('[data-move]');
@@ -322,12 +496,17 @@ document.addEventListener('click', (e) => {
   const t = e.target.closest('nav [data-tab]');
   if (t) { if (tab === t.dataset.tab) scrollTo({ top: 0, behavior: 'smooth' }); tab = t.dataset.tab; render(); if (tab === 'search') $('#q')?.focus(); return; }
 });
-$('#refresh').onclick = () => load(true);
+$('#refresh').onclick = () => { load(true); loadScores(); };
+document.addEventListener('change', (e) => { if (e.target.id === 'teams') { prefs.teams = e.target.value; store.set('prefs', prefs); loadScores(); } });
+// Keep scores live while a game is on, and news fresh while the app is open.
+setInterval(() => { if (!document.hidden && games.some((g) => g.state === 'in')) loadScores(); }, 60000);
+setInterval(() => { if (!document.hidden) load(); }, 5 * 60000);
 // Refresh when you come back to the app after 10+ minutes.
 document.addEventListener('visibilitychange', () => { if (!document.hidden && data && Date.now() - (load.last || 0) > 600000) { load.last = Date.now(); load(); } });
 load.last = Date.now();
 data = store.get('cache', null); render();
 load();
+loadScores();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>

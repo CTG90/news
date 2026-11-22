@@ -3,7 +3,7 @@
 import { XMLParser } from 'fast-xml-parser';
 import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { SECTIONS, TICKERS, BREAKING_WORDS } from './feeds.mjs';
+import { SECTIONS, TICKERS, BREAKING_SECTIONS, BREAKING_STRONG, BREAKING_WEAK, BREAKING_HARD, BREAKING_EXCLUDE } from './feeds.mjs';
 
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
 const PER_SECTION = 60;
@@ -76,9 +76,12 @@ function parseFeed(xml, feed, section) {
 const key = (t) => t.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter((w) => w.length > 2).slice(0, 8).join(' ');
 
 function isBreaking(a) {
-  if (Date.now() - a.time > 6 * 3600e3) return false;
-  const t = a.title.toLowerCase();
-  return BREAKING_WORDS.some((w) => t.includes(w));
+  if (!BREAKING_SECTIONS.includes(a.section) || Date.now() - a.time > 4 * 3600e3) return false;
+  const t = ` ${a.title.toLowerCase()} `;
+  const has = (w) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(t);
+  if (BREAKING_EXCLUDE.some(has)) return false;
+  if (BREAKING_STRONG.some(has)) return true;
+  return BREAKING_WEAK.some(has) && BREAKING_HARD.some(has);
 }
 
 async function ogImage(url) {

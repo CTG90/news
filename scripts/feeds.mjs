@@ -165,9 +165,14 @@ export const TICKERS = [
   { cnbc: 'TSLA', sym: 'TSLA', label: 'TSLA' },
 ];
 
-// Headlines matching these, under 6 hours old, get a red BREAKING tag.
-export const BREAKING_WORDS = [
-  'breaking', 'shooting', 'shooter', 'gunman', 'shot dead', 'killed', 'dead after', 'plane crash',
-  'crash', 'derail', 'explosion', 'evacuat', 'manhunt', 'lockdown', 'hurricane', 'tornado',
-  'wildfire', 'earthquake', 'emergency', 'amber alert', 'active threat', 'collapse',
+// BREAKING tag rules (only National, South Carolina and Politics stories under 4 hours old).
+// STRONG words tag on their own. WEAK words also need a hard-news word and no EXCLUDE word.
+export const BREAKING_SECTIONS = ['national', 'sc', 'politics'];
+export const BREAKING_STRONG = [
+  'breaking:', 'shooting', 'shooter', 'gunman', 'gunfire', 'plane crash', 'helicopter crash', 'derail',
+  'explosion', 'evacuat', 'manhunt', 'lockdown', 'tornado warning', 'hurricane', 'wildfire', 'earthquake',
+  'amber alert', 'active threat', 'stabbing', 'hostage', 'bomb threat', 'mass casualty',
 ];
+export const BREAKING_WEAK = ['crash', 'killed', 'dead', 'dies', 'collapse', 'emergency', 'fire', 'missing', 'tornado'];
+export const BREAKING_HARD = ['police', 'sheriff', 'deputies', 'troopers', 'officials', 'victim', 'injured', 'hospital', 'fatal', 'highway', 'interstate', 'i-95', 'i-20', 'i-26', 'school', 'storm', 'rescue', 'apartment', 'home', 'county', 'scene'];
+export const BREAKING_EXCLUDE = ['market', 'stock', 'crypto', 'bitcoin', 'course', 'box office', 'season', 'game', 'nfl', 'nba', 'ratings', 'review', 'opinion', 'podcast', 'recipe', 'anniversary', 'years ago', 'documentary', 'trailer'];
