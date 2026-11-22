@@ -1,16 +1,21 @@
 // Sends breaking-news push alerts to subscribed phones.
-// Needs repo secrets: VAPID_PRIVATE (key) and PUSH_SUBS (one subscription code per line, from the app's Alerts setting).
-// Remembers what it already sent in push-state.json (kept between runs by the Actions cache).
+// Needs one repo secret: PUSH_SUBS (one alert code per line, from the app's Settings → Breaking alerts).
+// The signing keys are generated on the first run and kept in push-keys.json (Actions cache); the public half
+// is published to data/push.json so the app can subscribe. Sent alerts are remembered in push-state.json.
 import webpush from 'web-push';
 import { readFile, writeFile } from 'node:fs/promises';
 
-const PUBLIC = 'BB4mO8LsX8OLTRYJgJPGEdFQH9Ofgne7AM9h8L0w-vEa-88MSRwvaxVhTUcUguN73bMSZDoJxDhLvhtSehGglMg';
-const { VAPID_PRIVATE, PUSH_SUBS } = process.env;
+const { PUSH_SUBS } = process.env;
 const ALERT_SECTIONS = ['national', 'sc'];
 const MAX_AGE_MIN = 60;
 const MAX_PER_RUN = 3;
 
-if (!VAPID_PRIVATE || !PUSH_SUBS?.trim()) { console.log('push: no subscribers configured, skipping'); process.exit(0); }
+let keys;
+try { keys = JSON.parse(await readFile('push-keys.json', 'utf8')); } catch {}
+if (!keys?.publicKey) { keys = webpush.generateVAPIDKeys(); await writeFile('push-keys.json', JSON.stringify(keys)); console.log('push: generated new signing keys'); }
+await writeFile('data/push.json', JSON.stringify({ publicKey: keys.publicKey }));
+
+if (!PUSH_SUBS?.trim()) { console.log('push: no subscribers yet (add the PUSH_SUBS secret), skipping'); process.exit(0); }
 
 const subs = PUSH_SUBS.split(/\s+/).filter(Boolean).map((code) => {
   try { return JSON.parse(Buffer.from(code, 'base64').toString('utf8')); } catch { return null; }
@@ -25,7 +30,7 @@ const fresh = ALERT_SECTIONS.flatMap((id) => data.articles[id] || [])
   .filter((a) => a.breaking && Date.now() - a.time < MAX_AGE_MIN * 60e3 && !state.sent.includes(a.link))
   .sort((a, b) => b.time - a.time);
 
-webpush.setVapidDetails('mailto:news-bot@users.noreply.github.com', PUBLIC, VAPID_PRIVATE);
+webpush.setVapidDetails('mailto:news-bot@users.noreply.github.com', keys.publicKey, keys.privateKey);
 // On the very first run just record what's out there, so you don't get a burst of old alerts.
 const toSend = firstRun ? [] : fresh.slice(0, MAX_PER_RUN);
 for (const a of toSend) {

@@ -31,22 +31,25 @@ jobs:
       - name: Fetch news
         run: node scripts/fetch-news.mjs
 
-      - name: Restore alert history
+      - name: Restore alert keys and history
         uses: actions/cache/restore@v4
         with:
-          path: push-state.json
+          path: |
+            push-keys.json
+            push-state.json
           key: push-state-${{ github.run_id }}
           restore-keys: push-state-
       - name: Send breaking alerts
         env:
-          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
           PUSH_SUBS: ${{ secrets.PUSH_SUBS }}
         run: node scripts/push.mjs
-      - name: Save alert history
+      - name: Save alert keys and history
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: push-state.json
+          path: |
+            push-keys.json
+            push-state.json
           key: push-state-${{ github.run_id }}
 
       - name: Build site

@@ -180,7 +180,7 @@ let saved = store.get('saved', []);
 let prefs = Object.assign({ order: [], hidden: [], leagues: ['nfl', 'cfb', 'nba'], teams: '' }, store.get('prefs', {}));
 let taste = Object.assign({ sec: {}, src: {}, kw: {}, n: 0, seen: [] }, store.get('taste', {}));
 let games = [];
-const VAPID = 'BB4mO8LsX8OLTRYJgJPGEdFQH9Ofgne7AM9h8L0w-vEa-88MSRwvaxVhTUcUguN73bMSZDoJxDhLvhtSehGglMg';
+
 const LEAGUES = {
   nfl: { name: 'NFL', path: 'football/nfl' }, cfb: { name: 'College Football', short: 'NCAAF', path: 'football/college-football', college: true },
   nba: { name: 'NBA', path: 'basketball/nba' }, cbb: { name: 'College Basketball', short: 'NCAAB', path: 'basketball/mens-college-basketball', college: true },
@@ -464,7 +464,8 @@ document.addEventListener('click', (e) => {
       try {
         if (await Notification.requestPermission() !== 'granted') { toast('Notifications are blocked in Settings'); return; }
         const reg = await navigator.serviceWorker.ready;
-        await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlKey(VAPID) });
+        const { publicKey } = await fetch(`data/push.json?t=${Date.now()}`).then((r) => r.json());
+        await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlKey(publicKey) });
         toast('Alerts on'); alertStatus();
       } catch (err) { toast('Couldn’t turn on alerts'); }
     })();

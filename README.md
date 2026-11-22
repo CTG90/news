@@ -13,10 +13,10 @@ A free, Apple News–style news app with 13 sections: National, South Carolina, 
 - **Settings** (the Edit chip) covers sections, score leagues and teams, breaking alerts, and a sync code for moving your saves and settings to another device.
 
 ## Breaking alerts (one-time setup)
-1. In the repo, go to **Settings → Secrets and variables → Actions** and add the secret `VAPID_PRIVATE` (the private key Claude gave you).
-2. On your iPhone, open the app from your Home Screen. Go to **Edit → Breaking alerts → Turn on alerts**, then **Copy alert code**.
-3. Add that code as the secret `PUSH_SUBS`. For more than one device, put one code per line.
+1. On your iPhone, open the app from your Home Screen. Go to **Edit → Breaking alerts → Turn on alerts**, then **Copy alert code**.
+2. In the repo, go to **Settings → Secrets and variables → Actions → New repository secret**. Name it `PUSH_SUBS` and paste the code. For more than one device, put one code per line.
 
+The signing keys are created automatically on the first run and kept in the Actions cache.
 Alerts go out for new BREAKING stories in National and South Carolina, at most 3 per run.
 
 ## Setup (one time)
