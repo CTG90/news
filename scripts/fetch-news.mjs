@@ -78,10 +78,12 @@ const key = (t) => t.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(
 function isBreaking(a) {
   if (!BREAKING_SECTIONS.includes(a.section) || Date.now() - a.time > 4 * 3600e3) return false;
   const t = ` ${a.title.toLowerCase()} `;
-  const has = (w) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(t);
+  const re = (w, whole) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}${whole ? '\\b' : ''}`);
+  const has = (w) => re(w, false).test(t);       // prefix match: "evacuat" → evacuate, evacuation
+  const word = (w) => re(w, true).test(t);       // whole word: "fire" but not "fired"
   if (BREAKING_EXCLUDE.some(has)) return false;
   if (BREAKING_STRONG.some(has)) return true;
-  return BREAKING_WEAK.some(has) && BREAKING_HARD.some(has);
+  return BREAKING_WEAK.some(word) && BREAKING_HARD.some(word);
 }
 
 async function ogImage(url) {
