@@ -1,0 +1,54 @@
+2026-11-22T21:25:14.475Z
+economy     ✗  Calculated Risk: Entity expansion limit exceeded: 1021 > 1000
+economy     ✗  Google News: Entity expansion limit exceeded: 1024 > 1000
+economy    10  MarketWatch
+economy    10  NPR
+economy    30  CNBC
+national    ✗  Fox News: Entity expansion limit exceeded: 1047 > 1000
+national    ✗  Google News: Entity expansion limit exceeded: 1008 > 1000
+national   10  NPR
+national   25  ABC News
+national   25  NBC News
+national   30  CBS News
+politics    ✗  Fox News: Entity expansion limit exceeded: 1042 > 1000
+politics   10  NPR
+politics   10  Washington Examiner
+politics   15  The Hill
+politics   30  CBS News
+politics   30  Politico
+politics   72  Google News
+sc          ✗  Post and Courier: HTTP 429
+sc          ✗  SCNow: HTTP 429
+sc         10  WBTW
+sc         18  Google News
+sc         23  Google News
+sc         26  WSPA
+sc         33  WCBD
+sc        100  SC Daily Gazette
+sneakers    7  Sneaker News
+sneakers    ✗  KicksOnFire: HTTP 403
+sneakers   10  Nice Kicks
+sneakers   20  Hypebeast
+sneakers   53  Google News
+stocks      ✗  Yahoo Finance: HTTP 404
+stocks     10  Investing.com
+stocks     30  CNBC
+stocks     30  MarketWatch
+stocks    100  Google News
+tech        ✗  Google News: Entity expansion limit exceeded: 1032 > 1000
+tech       10  The Verge
+tech       20  Ars Technica
+tech       20  Engadget
+tech       20  TechCrunch
+tech      100  9to5Mac
+quote ^DJI: HTTP 429
+quote ^GSPC: HTTP 429
+quote ^IXIC: HTTP 429
+quote ^VIX: HTTP 429
+quote BTC-USD: HTTP 429
+quote ^TNX: HTTP 429
+quote CL=F: HTTP 429
+quote GC=F: HTTP 429
+quote AAPL: HTTP 429
+quote NVDA: HTTP 429
+quote TSLA: HTTP 429
