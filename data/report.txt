@@ -1,4 +1,4 @@
-2026-11-22T21:32:33.370Z
+2026-11-22T21:33:22.131Z
 economy    10  MarketWatch
 economy    10  NPR
 economy    25  Calculated Risk
@@ -31,7 +31,7 @@ politics   15  The Hill
 politics   25  Fox News
 politics   30  CBS News
 politics   30  Politico
-politics   76  Google News
+politics   75  Google News
 rides       7  The Drive
 rides      20  Motor1
 rides      20  RideApart
@@ -39,8 +39,6 @@ rides      25  Asphalt & Rubber
 rides      50  Car and Driver
 rides      50  Road & Track
 rides     100  Google News
-sc          ✗  Post and Courier: HTTP 429
-sc          ✗  SCNow: HTTP 429
 sc         10  WBTW
 sc         18  Google News
 sc         20  Live 5
@@ -49,20 +47,21 @@ sc         20  WMBF
 sc         23  Google News
 sc         26  WSPA
 sc         33  WCBD
+sc         40  Post and Courier
+sc         40  SCNow
 sc         41  WPDE
 sc        100  SC Daily Gazette
 science    10  NASA
 science    20  Ars Technica
 science    50  Space.com
 science    60  ScienceDaily
-science    63  Google News
+science    66  Google News
 sneakers    6  Highsnobiety
 sneakers    7  Sneaker Files
 sneakers    7  Sneaker News
 sneakers   10  Nice Kicks
 sneakers   20  Hypebeast
-sneakers   52  Google News
-sports      0  ESPN
+sneakers   51  Google News
 sports     36  CBS Sports
 sports     50  Yahoo Sports
 sports     70  Google News
@@ -76,5 +75,5 @@ tech       10  The Verge
 tech       20  Ars Technica
 tech       20  Engadget
 tech       20  TechCrunch
-tech       57  Google News
+tech       56  Google News
 tech      100  9to5Mac
