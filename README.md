@@ -1,10 +1,12 @@
 # Coke's News
 
+Live at **https://ctg90.github.io/news/**
+
 A free, Apple News–style news app: National, South Carolina, Politics, Tech, Sneakers, Stocks, Economy, plus a breaking-news banner and a market strip.
 
 ## How it works
 - A GitHub Action (`.github/workflows/update-news.yml`) runs every 30 minutes and executes `scripts/fetch-news.mjs`.
-- That script pulls the free RSS feeds listed in `scripts/feeds.mjs` along with Yahoo Finance quotes, removes duplicate stories, flags breaking stories and writes the result to `data/news.json`.
+- That script pulls the free RSS feeds listed in `scripts/feeds.mjs` along with market quotes (CNBC, with Yahoo as backup), removes duplicate stories, flags breaking stories and writes the result to `data/news.json`.
 - GitHub Pages serves `index.html`, which reads `data/news.json`. There are no API keys, servers or subscriptions.
 
 ## Setup (one time)
@@ -15,5 +17,6 @@ A free, Apple News–style news app: National, South Carolina, Politics, Tech, S
 
 ## Customize
 - **Sources:** edit `scripts/feeds.mjs`. Each section is a list of `{ name, url }`, and a feed that fails is skipped automatically.
-- **Watchlist:** edit the `TICKERS` list in the same file. It uses Yahoo symbols, e.g. `AMD` or `^RUT`.
+- **Watchlist:** edit the `TICKERS` list in the same file. Each entry has a CNBC symbol and a Yahoo backup symbol (e.g. `{ cnbc: 'AMD', sym: 'AMD', label: 'AMD' }`).
+- **Feed health:** `data/report.txt` shows how many stories each source returned on the last run and which ones failed.
 - **Breaking keywords:** edit `BREAKING_WORDS`. A story is tagged only if it matches and is less than 6 hours old.
