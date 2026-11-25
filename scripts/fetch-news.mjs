@@ -146,7 +146,7 @@ async function quotes() {
 // ---- Top Stories ranking ----
 // A story's "coverage" = how many different outlets ran it in the last 36h (matched by shared title words),
 // plus whether Google's Top Stories has it. Big stories get covered everywhere; small ones don't.
-const STOPW = new Set('about after again against also amid among another because been before being between could does from have into just more most much only other over said says should since some such than that their them then there these they this those through under until very what when where which while will with would your year years first last week today news live updates update report reports says said here heres know need could video photos watch what whats amid near after over into more than make made takes take gets says'.split(' '));
+const STOPW = new Set('black friday cyber monday deal deals sale sales best gift gifts guide shop shopping buy price prices off save about after again against also amid among another because been before being between could does from have into just more most much only other over said says should since some such than that their them then there these they this those through under until very what when where which while will with would your year years first last week today news live updates update report reports says said here heres know need could video photos watch what whats amid near after over into more than make made takes take gets says'.split(' '));
 const toks = (t) => new Set(t.toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 2 && !STOPW.has(w)));
 function similar(a, b) {
   let shared = 0;
@@ -165,7 +165,9 @@ function rankTop(sections, everything) {
     const title = ` ${a.title.toLowerCase()} `;
     const boost = BOOST_WORDS.some((w) => title.includes(w.startsWith(' ') || w.endsWith(' ') ? w : ` ${w}`)) ? 1 : 0;
     const h = (Date.now() - a.time) / 3600e3;
-    a.rank = 3 * Math.log2(1 + a.coverage) + (signal ? 4 : 0) + 2 * boost + (a.breaking ? 3 : 0) + 4 * Math.exp(-h / 8) + (a.image ? 0.5 : 0);
+    // Shopping roundups and deal posts aren't news, keep them out of Top.
+    const promo = /\b(deals?|sales?|discount|coupon|gift guide|best .* to buy|shopping|% off|prime day|black friday|cyber monday)\b/i.test(a.title) && !/\b(attack|breach|hack)/i.test(a.title);
+    a.rank = (promo ? -6 : 0) + 3 * Math.log2(1 + a.coverage) + (signal ? 4 : 0) + 2 * boost + (a.breaking ? 3 : 0) + 4 * Math.exp(-h / 8) + (a.image ? 0.5 : 0);
   }
   // Pick the best, one story per event, max 4 per section so Top stays a mix.
   const out = [], per = {}, picked = [];
