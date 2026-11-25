@@ -55,6 +55,18 @@ export const SECTIONS = {
       { name: 'Google News', url: gnTopic('TECHNOLOGY'), fallback: true },
     ],
   },
+  cyber: {
+    label: 'Cybersecurity',
+    feeds: [
+      { name: 'BleepingComputer', url: 'https://www.bleepingcomputer.com/feed/' },
+      { name: 'The Record', url: 'https://therecord.media/feed' },
+      { name: 'The Hacker News', url: 'https://feeds.feedburner.com/TheHackersNews' },
+      { name: 'SecurityWeek', url: 'https://www.securityweek.com/feed/' },
+      { name: 'Krebs on Security', url: 'https://krebsonsecurity.com/feed/' },
+      { name: 'Dark Reading', url: 'https://www.darkreading.com/rss.xml' },
+      { name: 'Google News', url: gn('(cyberattack OR "data breach" OR ransomware OR hackers) when:2d'), fallback: true },
+    ],
+  },
   sneakers: {
     label: 'Sneakers',
     feeds: [
@@ -149,6 +161,16 @@ export const SECTIONS = {
   },
 
 };
+
+// "What's big right now" signals for ranking Top Stories. These feeds are never shown as stories;
+// a story that also appears here gets a big boost.
+export const SIGNAL_FEEDS = [
+  { name: 'Google Top Stories', url: 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en' },
+  { name: 'Google US', url: gnTopic('NATION') },
+  { name: 'Google World', url: gnTopic('WORLD') },
+];
+// Topics that should rise in Top Stories even when coverage is still building.
+export const BOOST_WORDS = ['cyberattack', 'cyber attack', 'hack', 'hacked', 'hackers', 'breach', 'ransomware', 'outage', 'cia', 'fbi', 'nsa', 'pentagon', 'supreme court', 'fed ', 'federal reserve', 'south carolina', 'florence'];
 
 // Market strip. cnbc = CNBC quote symbol (primary), sym = Yahoo symbol (backup). Add your watchlist here.
 export const TICKERS = [

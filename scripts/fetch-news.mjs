@@ -3,7 +3,7 @@
 import { XMLParser } from 'fast-xml-parser';
 import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { SECTIONS, TICKERS, BREAKING_SECTIONS, BREAKING_STRONG, BREAKING_WEAK, BREAKING_HARD, BREAKING_EXCLUDE } from './feeds.mjs';
+import { SECTIONS, SIGNAL_FEEDS, BOOST_WORDS, TICKERS, BREAKING_SECTIONS, BREAKING_STRONG, BREAKING_WEAK, BREAKING_HARD, BREAKING_EXCLUDE } from './feeds.mjs';
 
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
 const PER_SECTION = 60;
@@ -143,15 +143,57 @@ async function quotes() {
   return TICKERS.map((t) => out.get(t.sym)).filter(Boolean).map(({ cnbc, ...q }) => ({ ...q, url: `https://www.cnbc.com/quotes/${encodeURIComponent(cnbc)}` }));
 }
 
+// ---- Top Stories ranking ----
+// A story's "coverage" = how many different outlets ran it in the last 36h (matched by shared title words),
+// plus whether Google's Top Stories has it. Big stories get covered everywhere; small ones don't.
+const STOPW = new Set('about after again against also amid among another because been before being between could does from have into just more most much only other over said says should since some such than that their them then there these they this those through under until very what when where which while will with would your year years first last week today news live updates update report reports says said here heres know need could video photos watch what whats amid near after over into more than make made takes take gets says'.split(' '));
+const toks = (t) => new Set(t.toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 2 && !STOPW.has(w)));
+function similar(a, b) {
+  let shared = 0;
+  for (const w of a) if (b.has(w)) shared++;
+  return shared >= 3 && shared / Math.min(a.size, b.size) >= 0.4;
+}
+function rankTop(sections, everything) {
+  const recent = everything.filter((x) => Date.now() - x.time < 36 * 3600e3).map((x) => ({ x, t: toks(x.title) }));
+  const candidates = Object.values(sections).flat().filter((a) => Date.now() - a.time < 30 * 3600e3);
+  for (const a of candidates) {
+    const t = toks(a.title), outlets = new Set([a.source]);
+    let signal = false;
+    for (const r of recent) if (r.x !== a && similar(t, r.t)) { if (r.x.signal) signal = true; else outlets.add(r.x.source); }
+    a.coverage = outlets.size;
+    a.topSignal = signal;
+    const title = ` ${a.title.toLowerCase()} `;
+    const boost = BOOST_WORDS.some((w) => title.includes(w.startsWith(' ') || w.endsWith(' ') ? w : ` ${w}`)) ? 1 : 0;
+    const h = (Date.now() - a.time) / 3600e3;
+    a.rank = 3 * Math.log2(1 + a.coverage) + (signal ? 4 : 0) + 2 * boost + (a.breaking ? 3 : 0) + 4 * Math.exp(-h / 8) + (a.image ? 0.5 : 0);
+  }
+  // Pick the best, one story per event, max 4 per section so Top stays a mix.
+  const out = [], per = {}, picked = [];
+  for (const a of candidates.sort((x, y) => y.rank - x.rank)) {
+    if (out.length >= 30) break;
+    if ((per[a.section] || 0) >= 4) continue;
+    const t = toks(a.title);
+    if (picked.some((p) => similar(t, p))) continue;
+    out.push(a.link); picked.push(t); per[a.section] = (per[a.section] || 0) + 1;
+  }
+  return out;
+}
+
 async function main() {
   const report = [];
   const sections = {};
+  const everything = []; // every item seen this run, incl. duplicates and signal feeds, for coverage counts
+  await pool(SIGNAL_FEEDS, 3, async (f) => {
+    try { const items = parseFeed(await get(f.url), { ...f, fallback: true }, '_signal'); items.forEach((a) => (a.signal = true)); everything.push(...items); report.push(`_signal   ${String(items.length).padStart(3)}  ${f.name}`); }
+    catch (e) { report.push(`_signal     ✗  ${f.name}: ${e.message}`); }
+  });
   for (const [id, sec] of Object.entries(SECTIONS)) {
     const all = [];
     await pool(sec.feeds, 5, async (f) => {
       try {
         const items = parseFeed(await get(f.url), f, id);
         all.push(...items);
+        everything.push(...items);
         report.push(`${id.padEnd(9)} ${String(items.length).padStart(3)}  ${f.name}`);
       } catch (e) { report.push(`${id.padEnd(9)}   ✗  ${f.name}: ${e.message}`); }
     });
@@ -184,11 +226,14 @@ async function main() {
 
   for (const l of Object.values(sections)) for (const a of l) { a.breaking = isBreaking(a); delete a.fallback; }
 
+  const top = rankTop(sections, everything);
+
   const data = {
     updated: Date.now(),
     sections: Object.fromEntries(Object.entries(SECTIONS).map(([id, s]) => [id, s.label])),
     markets: LOCAL ? [] : await quotes(),
     articles: sections,
+    top,
   };
   await mkdir('data', { recursive: true });
   await writeFile('data/news.json', JSON.stringify(data));

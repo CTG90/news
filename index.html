@@ -169,7 +169,7 @@ nav button.on{color:var(--accent)}
   <textarea id="synccode" class="code" placeholder="Paste a sync code from your other device"></textarea><div class="btns"><button class="btn ghost" data-sync-load>Load code</button></div>
 </div></div>
 <script>
-const COLORS = { national:'#0a84ff', sc:'#7a2b8f', politics:'#d63a3a', tech:'#5e5ce6', sneakers:'#ff9f0a', stocks:'#1a9d4b', economy:'#0f7d8c', sports:'#e8590c', entertainment:'#d6336c', science:'#1098ad', health:'#2f9e44', rides:'#495057', photography:'#ae3ec9' };
+const COLORS = { cyber:'#c92a2a', national:'#0a84ff', sc:'#7a2b8f', politics:'#d63a3a', tech:'#5e5ce6', sneakers:'#ff9f0a', stocks:'#1a9d4b', economy:'#0f7d8c', sports:'#e8590c', entertainment:'#d6336c', science:'#1098ad', health:'#2f9e44', rides:'#495057', photography:'#ae3ec9' };
 const $ = (s) => document.querySelector(s);
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
@@ -307,6 +307,15 @@ function scored() {
 
 // Top: a mix across sections, preferring stories with images and breaking news.
 function topStories() {
+  // Ranked server-side by how widely a story is covered, Google Top Stories, and recency.
+  if (data.top?.length) {
+    const by = new Map(allArticles().map((a) => [a.link, a]));
+    const banner = allArticles().filter((a) => a.breaking).sort((a, b) => b.time - a.time)[0];
+    const ranked = data.top.map((l) => by.get(l)).filter((a) => a && a !== banner);
+    const lead = ranked.slice(0, 4).findIndex((a) => a.image);
+    if (lead > 0) ranked.unshift(ranked.splice(lead, 1)[0]);
+    if (ranked.length >= 8) return ranked.slice(0, 16);
+  }
   const out = [];
   const lists = sectionIds().map((id) => (data.articles[id] || []).slice(0, 8));
   const used = new Set();
