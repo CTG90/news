@@ -169,7 +169,7 @@ nav button.on{color:var(--accent)}
   <textarea id="synccode" class="code" placeholder="Paste a sync code from your other device"></textarea><div class="btns"><button class="btn ghost" data-sync-load>Load code</button></div>
 </div></div>
 <script>
-const COLORS = { cyber:'#c92a2a', national:'#0a84ff', sc:'#7a2b8f', politics:'#d63a3a', tech:'#5e5ce6', sneakers:'#ff9f0a', stocks:'#1a9d4b', economy:'#0f7d8c', sports:'#e8590c', entertainment:'#d6336c', science:'#1098ad', health:'#2f9e44', rides:'#495057', photography:'#ae3ec9' };
+const COLORS = { ai:'#7048e8', cyber:'#c92a2a', national:'#0a84ff', sc:'#7a2b8f', politics:'#d63a3a', tech:'#5e5ce6', sneakers:'#ff9f0a', stocks:'#1a9d4b', economy:'#0f7d8c', sports:'#e8590c', entertainment:'#d6336c', science:'#1098ad', health:'#2f9e44', rides:'#495057', photography:'#ae3ec9' };
 const $ = (s) => document.querySelector(s);
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },

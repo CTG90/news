@@ -55,6 +55,16 @@ export const SECTIONS = {
       { name: 'Google News', url: gnTopic('TECHNOLOGY'), fallback: true },
     ],
   },
+  ai: {
+    label: 'Artificial Intelligence',
+    feeds: [
+      { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed' },
+      { name: 'The Verge', url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml' },
+      { name: 'TechCrunch', url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
+      { name: 'VentureBeat', url: 'https://venturebeat.com/category/ai/feed/' },
+      { name: 'Google News', url: gn('("artificial intelligence" OR OpenAI OR Anthropic OR "Google DeepMind" OR "AI model") when:2d'), fallback: true },
+    ],
+  },
   cyber: {
     label: 'Cybersecurity',
     feeds: [
